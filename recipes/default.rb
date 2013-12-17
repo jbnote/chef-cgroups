@@ -18,58 +18,31 @@
 # limitations under the License.
 #
 
-
-
-unless node[:platform] == "redhat" and  node[:platform_version].to_i  != 6
-
 package "libcgroup" do
   action :install
 end
 
-
-
 template "/etc/cgconfig.conf" do
    source "cgconfig.conf.erb"
-   variables(
-    :controllers => node[:cgroups][:controllers],
-    :parameters => node[:cgroups][:parameters]
-      )  
-notifies :restart, "service[cgconfig]"
-notifies :restart, "service[cgred]"
-
-if ::File.exists? "/etc/init.d/#{node[:cgroups][:service]}"
-notifies :restart, "service[#{node[:cgroups][:service]}]"
-end
+   variables({ :controllers => node[:cgroups][:controllers],
+               :groups => node[:cgroups][:groups] })
 end
 
 
 
 template "/etc/cgrules.conf" do
   source "cgrules.conf.erb"
-  variables(
-    :users => node[:cgroups][:users]
-)
-notifies :restart, "service[cgred]"
-notifies :restart, "service[cgconfig]"
-
-if ::File.exists? "/etc/init.d/#{node[:cgroups][:service]}"
-notifies :restart, "service[#{node[:cgroups][:service]}]"
+  variables({
+              :users => node[:cgroups][:users]
+            })
 end
-end
-
-
-
-service "#{node[:cgroups][:service]}"  do
-only_if {::File.exists? "/etc/init.d/#{node[:cgroups][:service]}"}
-end
-
 
 service "cgconfig" do
-  action [:enable]
+  action :start
+  subscribes :restart, resources(:template => [ "/etc/cgconfig.conf" ]), :delayed
 end
 
 service "cgred" do
-  action [:enable]
-end
-
+  action :start
+  subscribes :restart, resources(:template => [ "/etc/cgconfig.conf", "/etc/cgrules.conf" ]), :delayed
 end
