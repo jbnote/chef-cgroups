@@ -9,7 +9,7 @@ mount {
 <% @groups.each do |name, attrs| %>
 group <%= name %> {
 <% attrs.each do |aname, params| -%>
-	<%= aname %>{
+	<%= aname %> {
 <% params.each do |p, v| %>
 		<%= p %>=<%= v %>;
 <% end %>
