@@ -1,3 +1,4 @@
+name             "cgroups"
 maintainer       "Eugenio Marzo"
 maintainer_email "eugenio.marzo@fao.org"
 license          "All rights reserved"
